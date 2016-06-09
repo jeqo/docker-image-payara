@@ -1,0 +1,42 @@
+- hosts: 127.0.0.1
+  connection: local
+  vars_files:
+    - vars/main.yml
+  tasks:
+    - name: create container
+      docker:
+        name: tmp-payara
+        image: "{{ base_image }}"
+        command: sleep infinity
+        state: started
+
+    - add_host:
+        name: tmp-payara
+        groups: docker
+        ansible_connection: docker
+
+- hosts: tmp-payara
+  connection: docker
+  pre_tasks:
+    - package:
+        name: sudo
+        state: latest
+  roles:
+    - role: jeqo.payara
+      payara_release: 4.1.1.162
+      payara_multilanguage: yes
+      payara_distribution: full
+
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: docker commit
+      command: "docker commit tmp-payara tmp-payara"
+
+    - name: docker kill
+      command: "docker kill tmp-payara"
+
+    - name: docker rm
+      command: "docker rm tmp-payara"
+
+- include: build.yml

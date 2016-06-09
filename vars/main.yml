@@ -1,0 +1,3 @@
+base_image: java:8-jdk
+image_name: jeqo/payara
+tag: full-4.1.1.162-jdk8
